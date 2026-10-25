@@ -168,7 +168,6 @@ function updatePreview(){
 
   const logoToUse = x.logoUrl || "";
 
-  // Aplicado text-align: justify nos blocos de descrição e seções
   p.innerHTML=`
   <div class="preview-left">
     ${logoToUse ? `<div class="preview-logo-wrap"><img src="${logoToUse}" class="preview-logo-img" alt="Logo"></div>` : ''}
@@ -310,7 +309,6 @@ function drawLabel(doc, x, y, w, h, d, qrData){
   const descText = d.descricao || "Uma combinação de ingredientes naturais...";
   const descLines = doc.splitTextToSize(descText, leftW);
   
-  // Texto justificado na coluna esquerda (opção "justify" nativa do jsPDF)
   descLines.forEach((line, index) => {
     if (curY < py + ph - 4.5) {
       const isLastLine = index === descLines.length - 1;
@@ -380,7 +378,6 @@ function drawLabel(doc, x, y, w, h, d, qrData){
     doc.setTextColor(...black);
     const lines = doc.splitTextToSize(String(sec.text), rightW);
     
-    // Texto justificado nas seções da coluna direita
     lines.forEach((line, index) => {
       if (rY < py + ph - 5.5) {
         const isLastLine = index === lines.length - 1;
@@ -470,17 +467,40 @@ $("generate-pdf").addEventListener("click",async()=>{
     const qrData=await getInstagramQRDataURL();
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
-    const W=210,H=297,dim=getDimensions(),labelW=dim.width*10,labelH=dim.height*10,marginX=5,marginY=5,gapX=2,gapY=2;
-    const cols=Math.floor((W-2*marginX+gapX)/(labelW+gapX));
-    const rows=Math.floor((H-2*marginY+gapY)/(labelH+gapY));
-    for(let page=0;page<pages;page++){
-      if(page>0)doc.addPage("a4","portrait");
-      for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-        const x=marginX+c*(labelW+gapX),y=marginY+r*(labelH+gapY);
-        if(x+labelW<=W-marginX+.01&&y+labelH<=H-marginY+.01)drawLabel(doc,x,y,labelW,labelH,d,qrData);
+    
+    const W = 210, H = 297;
+    const dim = getDimensions();
+    const labelW = dim.width * 10;
+    const labelH = dim.height * 10;
+    
+    // Margens menores (4mm) e espaços otimizados (1.5mm) para máximo aproveitamento da folha A4
+    const marginX = 4;
+    const marginY = 4;
+    const gapX = 1.5;
+    const gapY = 1.5;
+    
+    const cols = Math.floor((W - (2 * marginX) + gapX) / (labelW + gapX));
+    const rows = Math.floor((H - (2 * marginY) + gapY) / (labelH + gapY));
+    
+    // Centralização automática da grade na folha A4
+    const totalGridW = (cols * labelW) + ((cols - 1) * gapX);
+    const totalGridH = (rows * labelH) + ((rows - 1) * gapY);
+    const startX = Math.max(marginX, (W - totalGridW) / 2);
+    const startY = Math.max(marginY, (H - totalGridH) / 2);
+
+    for(let page = 0; page < pages; page++){
+      if(page > 0) doc.addPage("a4", "portrait");
+      for(let r = 0; r < rows; r++){
+        for(let c = 0; c < cols; c++){
+          const x = startX + c * (labelW + gapX);
+          const y = startY + r * (labelH + gapY);
+          if(x + labelW <= W - marginX + 0.01 && y + labelH <= H - marginY + 0.01){
+            drawLabel(doc, x, y, labelW, labelH, d, qrData);
+          }
+        }
       }
     }
-    const safe=(d.nome||"rotulo").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+    const safe = (d.nome || "rotulo").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
     doc.save(`rotulos-${safe||"sabonete"}-${String(dim.width).replace(".","-")}x${String(dim.height).replace(".","-")}cm.pdf`);
     notify(`PDF gerado com ${cols*rows} rótulos por folha (${dim.width} × ${dim.height} cm; ${pages} folha(s)).`);
   }catch(err){console.error(err);notify(err.message||"Erro ao gerar PDF. Tente novamente.")}
