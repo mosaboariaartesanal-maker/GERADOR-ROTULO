@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123d2c">
+  <title>Ateliê — Gerador de Rótulos</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">✿</div><div><strong>Ateliê Natural</strong><small>GERADOR DE RÓTULOS</small></div></div>
+    <nav>
+      <button class="nav-item active" data-tab="cadastro"><span>＋</span> Cadastro de rótulo</button>
+      <button class="nav-item" data-tab="repositorio"><span>▤</span> Repositório</button>
+      <button class="nav-item" data-tab="gerados"><span>▧</span> Rótulos gerados</button>
+      <button class="nav-item" data-tab="backup"><span>⇅</span> Importar / exportar</button>
+    </nav>
+    <div class="sidebar-note"><span class="status-dot"></span> Seus dados ficam salvos neste navegador.</div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar"><div><p class="eyebrow">PAINEL DE PRODUÇÃO</p><h1 id="page-title">Cadastro de rótulo</h1></div><div class="top-actions"><span class="pill">Formato padrão · 6 × 3,5 cm</span><button class="button primary" id="new-label">＋ Novo rótulo</button></div></header>
+
+    <section class="tab-panel active" id="tab-cadastro">
+      <div class="intro"><div><h2>Informações do sabonete</h2><p>Preencha os campos abaixo. Os dados serão usados no rótulo e guardados no repositório.</p></div><div class="step">01 <span>/ 04</span></div></div>
+      <form id="label-form">
+        <input type="hidden" id="label-id">
+        <input type="hidden" id="logoUrl">
+        
+        <div class="form-section">
+          <div class="section-heading"><span class="section-icon">✦</span><div><h3>Identificação e Logomarca</h3><p>Nome, logo da marca e categoria do produto.</p></div></div>
+          <div class="form-grid">
+            <label class="wide">Logo da Marca (Recomendado: 300 × 200px, fundo transparente)
+              <div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
+                <input type="file" id="logo-file" accept="image/*" style="flex:1;">
+                <button type="button" class="button ghost" id="remove-logo-btn" style="padding: 10px 14px; font-size:11px;">Remover Logo</button>
+              </div>
+              <div id="logo-preview-wrap" style="margin-top:8px; display:none; align-items:center; gap:10px;">
+                <img id="logo-preview-img" style="max-height:45px; border-radius:6px; border:1px solid #ccc; background:#fff; padding:2px;">
+                <small style="color:#55665b;">Logo carregada com sucesso</small>
+              </div>
+            </label>
+            <label class="wide">Nome do sabonete *<input id="nome" required placeholder="Ex.: Elixir de Calmaria"></label>
+            <label>Tipo de produto<input id="tipo" value="Sabonete artesanal" placeholder="Sabonete artesanal"></label>
+            <label>Peso líquido<input id="peso" value="100g" placeholder="Ex.: 100g"></label>
+            <label class="wide">Descrição / apresentação<textarea id="descricao" rows="3" placeholder="Uma combinação de ingredientes..."></textarea></label>
+            <label class="wide">Destaque / ingredientes em evidência<input id="destaque" placeholder="Ex.: Camomila e Erva-Cidreira"></label>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <div class="section-heading"><span class="section-icon">❋</span><div><h3>Composição e uso</h3><p>Informações de formulação e instruções ao consumidor.</p></div></div>
+          <div class="form-grid">
+            <label class="wide">Composição *<textarea id="composicao" rows="2" required placeholder="Base glicerinada..."></textarea></label>
+            <label class="wide">Modo de usar *<textarea id="modo" rows="2" required placeholder="Aplicar sobre a pele..."></textarea></label>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <div class="section-heading"><span class="section-icon">⚑</span><div><h3>Advertências e conservação</h3><p>Cuidados, validade e rastreabilidade.</p></div></div>
+          <div class="form-grid">
+            <label class="wide">Atenção / advertências<textarea id="atencao" rows="3" placeholder="Uso externo..."></textarea></label>
+            <label>Data de fabricação<input id="fabricacao" placeholder="MM/AAAA"></label>
+            <label>Data de validade<input id="validade" placeholder="MM/AAAA"></label>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <div class="section-heading"><span class="section-icon">⌂</span><div><h3>Contato e fabricante</h3><p>Canais e endereço no rótulo.</p></div></div>
+          <div class="form-grid">
+            <label>WhatsApp / telefone<input id="telefone" placeholder="(31) 98765-4321"></label>
+            <label>Instagram<input id="instagram" placeholder="@mosaboaria"></label>
+            <label class="wide">E-mail<input id="email" type="email" placeholder="contato@exemplo.com"></label>
+            <label class="wide">Endereço completo<textarea id="endereco" rows="2" placeholder="Rua, número, bairro..."></textarea></label>
+            <label>Nome do fabricante / marca<input id="marca" placeholder="Mô Saboaria"></label>
+          </div>
+        </div>
+        
+        <div class="form-footer"><span class="muted">* Campos obrigatórios para salvar.</span><div><button type="button" class="button ghost" id="clear-form">Limpar</button><button class="button primary" type="submit">Salvar rótulo <span>→</span></button></div></div>
+      </form>
+    </section>
+
+    <section class="tab-panel" id="tab-repositorio">
+      <div class="intro"><div><h2>Repositório de rótulos</h2></div><div class="step" id="repo-count">00 <span>rótulos</span></div></div>
+      <div class="toolbar"><div class="search-wrap"><span>⌕</span><input id="repo-search" placeholder="Buscar por nome..."></div><select id="repo-sort"><option value="recent">Mais recentes</option><option value="az">Nome (A–Z)</option><option value="za">Nome (Z–A)</option></select></div>
+      <div class="label-grid" id="repo-grid"></div>
+    </section>
+
+    <section class="tab-panel" id="tab-gerados">
+      <div class="intro"><div><h2>Gerar PDF para impressão</h2><p>Escolha um sabonete cadastrado e gere uma folha A4.</p></div><div class="step">03 <span>/ 04</span></div></div>
+      <div class="print-layout">
+        <div class="print-card">
+          <div class="section-heading"><span class="section-icon">▧</span><div><h3>Configuração da folha</h3></div></div>
+          <label>Selecione o rótulo<select id="print-select"><option value="">Selecione um sabonete...</option></select></label>
+          <div class="dimension-controls">
+            <label>Largura do rótulo (cm)<input id="label-width" type="number" min="2" max="20" step="0.1" value="6"></label>
+            <label>Altura do rótulo (cm)<input id="label-height" type="number" min="2" max="20" step="0.1" value="3.5"></label>
+          </div>
+          <div class="size-summary"><div><span>Rótulo</span><strong id="dimension-summary">6 × 3,5 cm</strong></div><div><span>Papel</span><strong>A4</strong></div><div><span>Orientação</span><strong>Retrato</strong></div></div>
+          <label>Quantidade de folhas <select id="print-pages"><option value="1">1 folha A4</option><option value="2">2 folhas A4</option><option value="5">5 folhas A4</option></select></label>
+          <button class="button primary full" id="generate-pdf">↓ Gerar PDF do rótulo</button>
+        </div>
+        <div class="preview-card"><div class="preview-head"><div><h3>Pré-visualização</h3></div><span class="preview-tag" id="preview-size-tag">6 × 3,5 cm</span></div><div id="label-preview" class="label-preview empty-preview">Selecione um rótulo para visualizar</div></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-backup">
+      <div class="intro"><div><h2>Importar e exportar dados</h2></div><div class="step">04 <span>/ 04</span></div></div>
+      <div class="backup-grid">
+        <article class="backup-card"><div class="backup-icon">⇧</div><h3>Exportar cadastros</h3><button class="button primary" id="export-json">Exportar JSON</button></article>
+        <article class="backup-card"><div class="backup-icon">⇩</div><h3>Importar cadastros</h3><label class="button ghost file-button">Escolher arquivo JSON<input type="file" id="import-json" accept=".json"></label></article>
+      </div>
+    </section>
+    <footer>ATELIÊ NATURAL <span>•</span> GERADOR DE RÓTULOS</footer>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
